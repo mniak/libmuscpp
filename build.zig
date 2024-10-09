@@ -8,7 +8,8 @@ pub fn build(b: *std.Build) void {
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
-    const target = b.standardTargetOptions(.{});
+    var target = b.standardTargetOptions(.{});
+    target.query.ofmt = .c;
 
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
@@ -16,7 +17,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const lib = b.addStaticLibrary(.{
-        .name = "libmus",
+        .name = "libmus-abc",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
         .root_source_file = b.path("src/root.zig"),
@@ -27,7 +28,14 @@ pub fn build(b: *std.Build) void {
     // This declares intent for the library to be installed into the standard
     // location when the user invokes the "install" step (the default step when
     // running `zig build`).
-    b.installArtifact(lib);
+    // const install_lib = b.addInstallArtifact(lib, .{ .dest_dir = .{ .override = .{ .custom = "zig-build-dest-dir" } } });
+    const install_lib = b.addInstallArtifact(lib, .{
+        .dest_dir = .{ .override = .{ .custom = "lib_c" } },
+        // .dest_sub_path = "SUB",
+        // .h_dir = .{ .override = .{ .custom = "H" } },
+        // .pdb_dir = .{ .override = .{ .custom = "PDB" } },
+    });
+    b.getInstallStep().dependOn(&install_lib.step);
 
     const exe = b.addExecutable(.{
         .name = "libmus",
@@ -39,7 +47,7 @@ pub fn build(b: *std.Build) void {
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
-    b.installArtifact(exe);
+    // b.installArtifact(exe);
 
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
