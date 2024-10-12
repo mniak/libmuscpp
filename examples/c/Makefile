@@ -1,4 +1,3 @@
-CC=zig cc
 CFLAGS+=-I/opt/homebrew/lib/zig/
 
 main.bin: main.c ../../build/libmus.h
