@@ -6,3 +6,6 @@ main.bin: main.cpp ../../build/libmus.h
 PHONY=run
 run: main.bin
 	./main.bin
+
+../../build/libmus.h: ../../src/libmus.zig
+	cd ../.. && ${MAKE} build/libmus.h
