@@ -1,16 +1,12 @@
 const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
-const TupleStepString = struct { step: Step, string: []u8 };
-const re = @cImport(@cInclude("regex.h"));
+const TupleStepString = struct { step: Step, remaining: []const u8 };
 
-export fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
-const ParseError = error{ TooShort, InvalidStep };
+const ParseError = error{ TooShort, InvalidStep, InvalidAlteration };
 
 const Step = enum(u8) { C = 1, D = 2, E = 3, F = 4, G = 5, A = 6, B = 7 };
-fn ParseStep(text: []u8) ParseError!TupleStepString {
+fn ParseStep(text: []const u8) ParseError!TupleStepString {
     if (text.len == 0) {
         return ParseError.TooShort;
     }
@@ -18,25 +14,25 @@ fn ParseStep(text: []u8) ParseError!TupleStepString {
     const tail = text[1..];
     switch (head) {
         'A' => {
-            return TupleStepString{ .step = Step.A, .string = tail };
+            return TupleStepString{ .step = Step.A, .remaining = tail };
         },
         'B' => {
-            return TupleStepString{ .step = Step.B, .string = tail };
+            return TupleStepString{ .step = Step.B, .remaining = tail };
         },
         'C' => {
-            return TupleStepString{ .step = Step.C, .string = tail };
+            return TupleStepString{ .step = Step.C, .remaining = tail };
         },
         'D' => {
-            return TupleStepString{ .step = Step.D, .string = tail };
+            return TupleStepString{ .step = Step.D, .remaining = tail };
         },
         'E' => {
-            return TupleStepString{ .step = Step.E, .string = tail };
+            return TupleStepString{ .step = Step.E, .remaining = tail };
         },
         'F' => {
-            return TupleStepString{ .step = Step.F, .string = tail };
+            return TupleStepString{ .step = Step.F, .remaining = tail };
         },
         'G' => {
-            return TupleStepString{ .step = Step.G, .string = tail };
+            return TupleStepString{ .step = Step.G, .remaining = tail };
         },
         else => {
             return ParseError.InvalidStep;
@@ -50,25 +46,37 @@ const Alteration = enum(i8) {
     Sharp = 1,
     DoubleSharp = 2,
 };
-fn ParseAlteration(text: []u8) ParseError!Alteration {
-    if (text.len == 0) {
-        return ParseError.TooShort;
-    }
-    switch (text) {
-        "bb" => {
-            return Alteration.DoubleFlat;
-        },
-        "b" => {
-            return Alteration.Flat;
-        },
-        "" => {
+
+fn ParseAlteration(text: []const u8) ParseError!Alteration {
+    switch (text.len) {
+        0 => {
             return Alteration.Natural;
         },
-        "#" => {
-            return Alteration.Sharp;
+        1 => {
+            switch (text[0]) {
+                'b' => {
+                    return Alteration.Flat;
+                },
+                '#' => {
+                    return Alteration.Sharp;
+                },
+                else => {
+                    return ParseError.InvalidAlteration;
+                },
+            }
         },
-        "##" => {
-            return Alteration.DoubleSharp;
+        2 => {
+            switch (text[0]) {
+                'b' => {
+                    return Alteration.DoubleFlat;
+                },
+                '#' => {
+                    return Alteration.DoubleSharp;
+                },
+                else => {
+                    return ParseError.InvalidAlteration;
+                },
+            }
         },
         else => {
             return ParseError.InvalidAlteration;
@@ -106,11 +114,12 @@ const PitchClass = struct {
     }
 };
 
-fn ParsePitchClass(text: []u8) ParseError!PitchClass {
+fn ParsePitchClass(text: []const u8) ParseError!PitchClass {
     const step = try ParseStep(text);
+    const alteration = try ParseAlteration(step.remaining);
     return PitchClass{
         .step = step.step,
-        .alteration = .DoubleSharp,
+        .alteration = alteration,
     };
 }
 
@@ -124,7 +133,7 @@ test "parse pitch class using simple name" {
             const text = try alloc.alloc(u8, step.len + alt.len);
             mem.copyForwards(u8, text[0..], step);
             mem.copyForwards(u8, text[step.len..], alt);
-            std.debug.print("INPUT = '{s}'\n", .{text});
+            std.debug.print("PitchClass input = \"{s}\"\n", .{text});
 
             const parsed = try ParsePitchClass(text);
             std.debug.print("  parsed.step = {}\n", .{parsed.step});
