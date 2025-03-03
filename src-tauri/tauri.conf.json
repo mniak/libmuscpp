@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "identifier": "dev.mniak.musigym",
   "build": {
-    "frontendDist": "../src"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../out"
   },
   "app": {
     "withGlobalTauri": true,
