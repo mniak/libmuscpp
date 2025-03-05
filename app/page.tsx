@@ -13,14 +13,14 @@ export default function Home() {
 
       <div className="row">
         <a href="https://tauri.app" target="_blank">
-          <img src="/assets/tauri.svg" className="logo tauri" alt="Tauri logo" />
+          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
         </a>
         <a
           href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
           target="_blank"
         >
           <img
-            src="/assets/javascript.svg"
+            src="/javascript.svg"
             className="logo vanilla"
             alt="JavaScript logo"
           />
