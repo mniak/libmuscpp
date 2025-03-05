@@ -35,7 +35,7 @@ export default function Home() {
       }}>
         <input id="greet-input" placeholder="Enter a name..." onChange={e => {
           setName(e.target.value);
-        }} />
+        }} value={name}/>
         <button type="submit">Greet</button>
       </form>
       <p id="greet-msg">{greetMessage}</p>
